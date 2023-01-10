@@ -1,0 +1,181 @@
+
+.intro{
+    padding-top: 8rem;
+    padding-bottom: 2rem;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.intro-header{
+    font-weight: bold;
+}
+
+.intro-body{
+    font-weight: 500;
+    line-height: 2rem;
+}
+
+.navbar-head{
+    background-color: #16354D;
+}
+
+.header-container{
+    background-color: #16354D;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.back-buttons{
+    padding-right: 10px;
+    margin-right: 4px;
+}
+
+.logo-text{
+    font-family: 'PT Serif', serif;
+    font-weight: 700;
+}
+
+.about-button{
+    font-family: 'PT Serif', serif;
+}
+
+.about-us{
+    font-family: 'Montserrat', sans-serif;
+    font-size: large;
+    font-weight: 700;
+    background-color: #E4E5EA;
+}
+
+.registration-intro{
+    font-family: 'Montserrat', sans-serif;
+    font-size: x-large;
+    font-weight: 400;
+    color: #E4E5EA;
+}
+
+.love{
+    color: #ea3a7b;
+    padding-left: 4px;
+}
+
+.page-header{
+    background-color: #9EABB3;
+    color: white;
+}
+
+.branding{
+    font-family: 'PT Serif', serif;
+    color: #F6E8DA;
+}
+
+.main-page{
+    height: 52rem;
+    background-color: #0C151C;
+    padding: 1rem;
+}
+
+.footer{
+    text-align: center;
+    background-color: #16354D;
+}
+
+#exampleFormControlTextarea2{
+    height: 15rem;
+}
+
+
+#exampleFormControlTextarea1{
+    height: 26rem;
+}
+
+#exampleFormControlTextarea3{
+    height: 35rem;
+}
+
+.interface{
+    /* font-family: 'Montserrat', sans-serif; */
+    font-family: 'PT Serif', serif;
+    font-weight: bold;
+    font-size: large;
+}
+
+.law-interface{
+    line-height: 4rem;
+    font-family: 'PT Serif', serif;
+    padding-left: 2rem;
+    text-align: left;
+}
+
+.law-scroll{
+    padding-top: 2rem;
+}
+
+.test-board{
+    background-color: #889293;
+    font-family: 'PT Serif', serif;
+    color: #E3E8EB;
+}
+
+.law-canvas{
+    font-family: 'PT Serif', serif;
+    line-height: 2rem;
+    text-align: justify;
+}
+
+.law-canvas-body{
+    height: 50rem;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 2rem;
+}
+
+.login-page{
+    /* padding: 20.4rem; */
+    background-color: #0C151C;
+}
+
+.registration-page{
+    background-color: #0C151C;
+    padding: 4rem;
+}
+
+.registration-form{
+    color: #E4E5EA;
+}
+
+.register-link{
+    text-align: center;
+}
+
+.paragraphs{
+    font-family: 'Montserrat', sans-serif;
+    line-height: 2rem;
+}
+
+.documents-view{
+    height: 91.8%;
+    background-color: #E4E5EA;
+}
+
+/* .relative-canvas{
+    position: relative;
+    max-height: 1000px;
+    overflow-y: scroll;
+} */
+
+.chapter-title{
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+    /* background-color: #D2D2D4; */
+}
+
+.section-titles{
+    background-color: #D2D2D4;
+}
+
+.summaries{
+    /* color: #107980; */
+    color: #16354D;
+    font-family: 'Montserrat', sans-serif;
+    font-size: large;
+    font-weight: 600;
+}

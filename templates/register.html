@@ -1,0 +1,28 @@
+{% include "header.html" %}
+
+<div class="container-fluid registration-page">
+  <div class="container">
+    <main class="form-register w-50"></main>
+    <p class="registration-intro">Our website is still in beta mode, so it is only open to a few select users. If you would like to be one of our beta users, please send us a 
+      request by completing the form below. If you have been referred by our current users, let us know who they are on the message section of the form.</p>
+    <form class="registration-form" method="post">
+      <div class="mb-2">
+        <label for="exampleFormControlInput1" class="form-label fw-bold fs-4">Name:</label>
+        <input type="text" class="form-control" id="exampleFormControlInput1" name="name" required>
+      </div>
+      <div class="mb-2">
+        <label for="exampleFormControlInput2" class="form-label fw-bold fs-4">Email address:</label>
+        <input type="email" class="form-control" id="exampleFormControlInput2" name="email" required>
+      </div>
+      <div class="mb-2">
+        <label for="exampleFormControlTextarea1" class="form-label fw-bold fs-4">Request Message:</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="message"
+          required></textarea>
+      </div>
+      <input class="w-25 btn btn-lg btn-secondary" type="submit" value="Submit Request">
+    </form>
+    </main>
+  </div>
+</div>
+
+{% include "footer.html" %}
