@@ -5,8 +5,10 @@ from datetime import datetime
 import os
 from registration_request_notice import NotificationManager
 from werkzeug.security import generate_password_hash, check_password_hash
+from mongo import UserAccess
 
 app = Flask(__name__)
+user = UserAccess()
 
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY')
 year = datetime.now().year
@@ -14,46 +16,41 @@ year = datetime.now().year
 # Creating database for regulations.
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///legislation.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 
 notification_manager = NotificationManager()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
+ADMIN = os.environ.get('admin')
 
 # Creating Database Table for Legislation
-class Legislation(db.Model):
-    __tablename__ = "regulations"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    body = db.Column(db.String, nullable=False)
+# class Legislation(db.Model):
+#     __tablename__ = "regulations"
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     body = db.Column(db.String, nullable=False)
 
 
 # Creating Database Table for Users
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(250), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
+# class User(UserMixin, db.Model):
+#     __tablename__ = "users"
+#     id = db.Column(db.Integer, primary_key=True)
+#     email = db.Column(db.String(100), unique=True)
+#     password = db.Column(db.String(250), nullable=False)
+#     name = db.Column(db.String(100), nullable=False)
 
 
 # db.create_all()
 
 # To manually register users for now.
 def register_user(name, email, password):
-    hashed_and_salted_password = generate_password_hash(password=password, method='pbkdf2:sha256', salt_length=6)
-    new_user = User(name=name,
-                    email=email,
-                    password=hashed_and_salted_password)
-    db.session.add(new_user)
-    db.session.commit()
+    user.register_user(name, email, password)
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
+def load_user(email):
+    return user.load_user(email)
 
 
 # For registration requests
@@ -76,9 +73,9 @@ def home():
 @app.route("/approve", methods=["GET", "POST"])
 @login_required
 def approvals():
-    if current_user.id != 1:
+    if current_user.id != ADMIN:
         return redirect(url_for('home'))
-    if current_user.id == 1 and request.method == "POST":
+    if current_user.id == ADMIN and request.method == "POST":
         name = request.form.get('name')
         email = request.form.get('email').lower()
         password = request.form.get('password')
@@ -90,19 +87,19 @@ def approvals():
 @app.route("/update", methods=["GET", "POST"])
 @login_required
 def updates():
-    if current_user.id != 1:
+    if current_user.id != ADMIN:
         return redirect(url_for('home'))
-    if current_user.id == 1 and request.method == "POST":
+    if current_user.id == ADMIN and request.method == "POST":
         email = request.form.get('email').lower()
-        user = User.query.filter_by(email=email).first()
+        valid_user = user.is_user(email)
         new_password = request.form.get('password')
-        if not user:
+        if not valid_user:
             flash("This user is not in our user list.")
             return redirect(url_for('updates'))
-        elif user:
-            user.password = generate_password_hash(password=new_password, method='pbkdf2:sha256', salt_length=6)
-            db.session.commit()
-            return redirect(url_for('home'))
+        elif valid_user:
+            if user.update(email, new_password)[0]:
+                flash(user.update(email, new_password)[1])
+                return redirect(url_for('home'))
     return render_template('updates.html')
 
 
@@ -111,17 +108,17 @@ def login():
     if request.method == "POST":
         email = request.form.get("email").lower()
         entered_password = request.form.get("password")
-        user = User.query.filter_by(email=email).first()
-        if not user:
+        valid_user = user.is_user(email)
+        if not valid_user:
             flash("That email doesn't exist, please try again.")
             return redirect(url_for('login'))
-        elif user:
-            password = check_password_hash(pwhash=user.password, password=entered_password)
+        elif valid_user:
+            password = user.check_password(email, entered_password)
             if not password:
                 flash("password incorrect, please try again")
                 return redirect(url_for('login'))
             elif password:
-                login_user(user=user)
+                login_user(user=valid_user)
                 return redirect(url_for('home'))
     return render_template("login.html", year=year)
 
