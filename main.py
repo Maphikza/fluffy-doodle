@@ -1,7 +1,5 @@
-from flask import Flask, render_template, request, url_for, flash, redirect, jsonify, session, make_response
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask import Flask, render_template, request, url_for, flash, redirect, session, make_response
 from datetime import datetime
-
 import os
 from registration_request_notice import NotificationManager
 from mongo import UserAccess
@@ -109,10 +107,9 @@ def logout():
 def fica():
     if session["authorised"]:
         if request.method == "POST":
-            name = current_user.name
-            email = current_user.email
+            user_identity_no = session["current_user"]
             message = request.form.get("message")
-            notification_manager.send_email_notification(name=name, email=email, message=message)
+            notification_manager.send_email_notification(name=user_identity_no, message=message)
         return render_template("fica.html", authorised=session["authorised"])
     else:
         flash("You are not authorised to be on this page.")
@@ -123,10 +120,9 @@ def fica():
 def fais():
     if session["authorised"]:
         if request.method == "POST":
-            name = current_user.name
-            email = current_user.email
+            user_identity_no = session["current_user"]
             message = request.form.get("message")
-            notification_manager.send_email_notification(name=name, email=email, message=message)
+            notification_manager.send_email_notification(name=user_identity_no, message=message)
         return render_template("fais.html", authorised=session["authorised"])
     else:
         flash("You are not authorised to be on this page.")
@@ -137,10 +133,9 @@ def fais():
 def cisca():
     if session["authorised"]:
         if request.method == "POST":
-            name = current_user.name
-            email = current_user.email
+            user_identity_no = session["current_user"]
             message = request.form.get("message")
-            notification_manager.send_email_notification(name=name, email=email, message=message)
+            notification_manager.send_email_notification(name=user_identity_no, message=message)
         return render_template("cisca.html", authorised=session["authorised"])
     else:
         flash("You are not authorised to be on this page.")
@@ -151,10 +146,9 @@ def cisca():
 def insurance_act():
     if session["authorised"]:
         if request.method == "POST":
-            name = current_user.name
-            email = current_user.email
+            user_identity_no = session["current_user"]
             message = request.form.get("message")
-            notification_manager.send_email_notification(name=name, email=email, message=message)
+            notification_manager.send_email_notification(name=user_identity_no, message=message)
         return render_template("insure18.html", authorised=session["authorised"])
     else:
         flash("You are not authorised to be on this page.")
@@ -162,5 +156,4 @@ def insurance_act():
 
 
 if __name__ == "__main__":
-    # app.run(debug=True)
     app.run(host='0.0.0.0', port=5000, debug=True)

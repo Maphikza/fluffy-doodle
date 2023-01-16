@@ -14,10 +14,10 @@ class NotificationManager:
         self.notice_email = WORK_EMAIL
         self.message = None
 
-    def send_email_notification(self, name, email, message):
+    def send_email_notification(self, name, message):
         with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
             connection.starttls()
             connection.login(user=self.email, password=self.password)
             connection.sendmail(from_addr=self.email, to_addrs=self.notice_email,
-                                msg=f"Subject:Registration Request from{name}\n\nEmail address: {email}\nRequest "
+                                msg=f"Subject:Registration Request from user {name}\n\nEmail address: "
                                     f"Message: {message}")
