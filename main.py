@@ -29,7 +29,7 @@ def register():
         name = request.form.get('name')
         email = request.form.get('email').lower()
         message = request.form.get('message')
-        notification_manager.send_email_notification(name=name, email=email, message=message)
+        notification_manager.send_email_notification(name=name, message=f"{message} {email}")
         return redirect(url_for('home'))
     return render_template("register.html")
 
@@ -93,6 +93,7 @@ def login():
             elif password:
                 session["authorised"] = True
                 session["current_user"] = str(database.search(email))
+                print(session["current_user"])
                 return redirect(url_for('home'))
     return render_template("login.html", year=year)
 
