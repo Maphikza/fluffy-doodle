@@ -1,13 +1,12 @@
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
 import os
 
 
-class UserAccess(UserMixin):
+class UserAccess:
 
     def __init__(self):
-        self.cluster = os.environ.get("my_cluster_db2")
+        self.cluster = os.environ.get("MONGO_URL")
         self.client = MongoClient(self.cluster)
         self.db = self.client.law_user
         self.records = self.db.workers
@@ -35,7 +34,7 @@ class UserAccess(UserMixin):
         results = self.records.find({})
         for users in results:
             if users["users"]["email"] == email_address:
-                answer = True
+                return True
             else:
                 answer = False
         return answer
@@ -67,7 +66,6 @@ class UserAccess(UserMixin):
         message = None
         results = self.records.find({})
         for users in results:
-            print(users["users"]["email"])
             if users["users"]["email"] == email_address:
                 password = generate_password_hash(password=new_password, method='pbkdf2:sha256', salt_length=6)
                 self.records.update_one({'_id': users["_id"]}, {'$set': {"password": password}})
@@ -79,9 +77,3 @@ class UserAccess(UserMixin):
         return answer, message
 
 
-# user = UserAccess()
-# print(user.register_user(name="Main Admin", email="Kingkunta@gmail.com", password="test")[1])
-# user.update(email_address="Kingkunta@gmail.com", new_password="test3")
-# tester = name="Main Admin", email="Kingkunta@gmail.com", password="test"
-# print(user.load_user("Kingkunta@gmail.com"))
-# print(user.check_password(email="Kingkunta@gmail.com", password="zetze"))

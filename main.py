@@ -1,56 +1,27 @@
-from flask import Flask, render_template, request, url_for, flash, redirect
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, url_for, flash, redirect, jsonify, session, make_response
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from datetime import datetime
+
 import os
 from registration_request_notice import NotificationManager
-from werkzeug.security import generate_password_hash, check_password_hash
 from mongo import UserAccess
 
 app = Flask(__name__)
-user = UserAccess()
+database = UserAccess()
 
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY')
+
 year = datetime.now().year
 
 # Creating database for regulations.
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///legislation.db")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# db = SQLAlchemy(app)
 
 notification_manager = NotificationManager()
 
-login_manager = LoginManager()
-login_manager.init_app(app)
 ADMIN = os.environ.get('admin')
 
-# Creating Database Table for Legislation
-# class Legislation(db.Model):
-#     __tablename__ = "regulations"
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)
-#     body = db.Column(db.String, nullable=False)
 
-
-# Creating Database Table for Users
-# class User(UserMixin, db.Model):
-#     __tablename__ = "users"
-#     id = db.Column(db.Integer, primary_key=True)
-#     email = db.Column(db.String(100), unique=True)
-#     password = db.Column(db.String(250), nullable=False)
-#     name = db.Column(db.String(100), nullable=False)
-
-
-# db.create_all()
-
-# To manually register users for now.
 def register_user(name, email, password):
-    user.register_user(name, email, password)
-
-
-@login_manager.user_loader
-def load_user(email):
-    return user.load_user(email)
+    database.register_user(name, email, password)
 
 
 # For registration requests
@@ -58,7 +29,7 @@ def load_user(email):
 def register():
     if request.method == "POST":
         name = request.form.get('name')
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         message = request.form.get('message')
         notification_manager.send_email_notification(name=name, email=email, message=message)
         return redirect(url_for('home'))
@@ -67,40 +38,44 @@ def register():
 
 @app.route("/")
 def home():
-    return render_template("index.html", year=year)
+    if "authorised" in session:
+        return render_template("index.html", year=year, authorised=session["authorised"])
+    else:
+        session["current_user"] = "unknown"
+        session["authorised"] = False
+
+    return render_template("index.html", year=year, authorised=session["authorised"])
 
 
 @app.route("/approve", methods=["GET", "POST"])
-@login_required
 def approvals():
-    if current_user.id != ADMIN:
+    if session["current_user"] != str(ADMIN):
         return redirect(url_for('home'))
-    if current_user.id == ADMIN and request.method == "POST":
+    if session["current_user"] == str(ADMIN) and request.method == "POST":
         name = request.form.get('name')
         email = request.form.get('email').lower()
         password = request.form.get('password')
         register_user(name=name, email=email, password=password)
         return redirect(url_for('home'))
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', authorised=session["authorised"])
 
 
 @app.route("/update", methods=["GET", "POST"])
-@login_required
 def updates():
-    if current_user.id != ADMIN:
+    if session["current_user"] != str(ADMIN):
         return redirect(url_for('home'))
-    if current_user.id == ADMIN and request.method == "POST":
+    if session["current_user"] == str(ADMIN) and request.method == "POST":
         email = request.form.get('email').lower()
-        valid_user = user.is_user(email)
+        valid_user = database.is_user(email)
         new_password = request.form.get('password')
         if not valid_user:
             flash("This user is not in our user list.")
             return redirect(url_for('updates'))
         elif valid_user:
-            if user.update(email, new_password)[0]:
-                flash(user.update(email, new_password)[1])
+            if database.update(email, new_password)[0]:
+                flash(database.update(email, new_password)[1])
                 return redirect(url_for('home'))
-    return render_template('updates.html')
+    return render_template('updates.html', authorised=session["authorised"])
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -108,75 +83,82 @@ def login():
     if request.method == "POST":
         email = request.form.get("email").lower()
         entered_password = request.form.get("password")
-        valid_user = user.is_user(email)
+        valid_user = database.is_user(email)
         if not valid_user:
             flash("That email doesn't exist, please try again.")
             return redirect(url_for('login'))
         elif valid_user:
-            password = user.check_password(email, entered_password)
+            password = database.check_password(email, entered_password)
             if not password:
                 flash("password incorrect, please try again")
                 return redirect(url_for('login'))
             elif password:
-                login_user(user=valid_user)
+                session["authorised"] = True
+                session["current_user"] = str(database.search(email))
                 return redirect(url_for('home'))
     return render_template("login.html", year=year)
 
 
 @app.route('/logout')
 def logout():
-    logout_user()
+    session["authorised"] = False
     return redirect(url_for('home'))
 
 
-# @app.route("/dashboard", methods=["GET", "POST"])
-# @login_required
-# def test_dashboard():
-#     return render_template("dashboard.html")
-
-
 @app.route("/fica", methods=["GET", "POST"])
-@login_required
 def fica():
-    if request.method == "POST":
-        name = current_user.name
-        email = current_user.email
-        message = request.form.get("message")
-        notification_manager.send_email_notification(name=name, email=email, message=message)
-    return render_template("fica.html")
+    if session["authorised"]:
+        if request.method == "POST":
+            name = current_user.name
+            email = current_user.email
+            message = request.form.get("message")
+            notification_manager.send_email_notification(name=name, email=email, message=message)
+        return render_template("fica.html", authorised=session["authorised"])
+    else:
+        flash("You are not authorised to be on this page.")
+        return redirect(url_for('login'))
 
 
 @app.route("/fais", methods=["GET", "POST"])
-@login_required
 def fais():
-    if request.method == "POST":
-        name = current_user.name
-        email = current_user.email
-        message = request.form.get("message")
-        notification_manager.send_email_notification(name=name, email=email, message=message)
-    return render_template("fais.html")
+    if session["authorised"]:
+        if request.method == "POST":
+            name = current_user.name
+            email = current_user.email
+            message = request.form.get("message")
+            notification_manager.send_email_notification(name=name, email=email, message=message)
+        return render_template("fais.html", authorised=session["authorised"])
+    else:
+        flash("You are not authorised to be on this page.")
+        return redirect(url_for('login'))
 
 
 @app.route("/cisca", methods=["GET", "POST"])
-@login_required
 def cisca():
-    if request.method == "POST":
-        name = current_user.name
-        email = current_user.email
-        message = request.form.get("message")
-        notification_manager.send_email_notification(name=name, email=email, message=message)
-    return render_template("cisca.html")
+    if session["authorised"]:
+        if request.method == "POST":
+            name = current_user.name
+            email = current_user.email
+            message = request.form.get("message")
+            notification_manager.send_email_notification(name=name, email=email, message=message)
+        return render_template("cisca.html", authorised=session["authorised"])
+    else:
+        flash("You are not authorised to be on this page.")
+        return redirect(url_for('login'))
 
 
 @app.route("/insure18", methods=["GET", "POST"])
-@login_required
 def insurance_act():
-    if request.method == "POST":
-        name = current_user.name
-        email = current_user.email
-        message = request.form.get("message")
-        notification_manager.send_email_notification(name=name, email=email, message=message)
-    return render_template("insure18.html")
+    if session["authorised"]:
+        if request.method == "POST":
+            name = current_user.name
+            email = current_user.email
+            message = request.form.get("message")
+            notification_manager.send_email_notification(name=name, email=email, message=message)
+        return render_template("insure18.html", authorised=session["authorised"])
+    else:
+        flash("You are not authorised to be on this page.")
+        return redirect(url_for('login'))
 
 
 if __name__ == "__main__":

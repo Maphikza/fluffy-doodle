@@ -2,13 +2,7 @@
 
   <div class="container-fluid footer">
     <div class="col-md-4 pt-4 pb-4 container footer">
-      {% if current_user.is_authenticated and current_user.id == 2: %}
-      <span class="mb-3 mb-md-0 text-white footer fs-5">© {{ year }} All for the love of Bella.<i
-          class="bi bi-heart-fill love"></i></span>
-      {% endif %}
-      {% if not current_user.id == 2: %}
       <span class="mb-3 mb-md-0 text-white footer fs-5">© {{ year }} TLL The Legislative Library.</span>
-      {% endif %}
     </div>
   </div>
 
