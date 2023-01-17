@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-import time
 
 
 class UserAccess:
@@ -33,8 +32,6 @@ class UserAccess:
     def is_user(self, email_address):
         answer = None
         results = self.records.find({})
-        time.sleep(2)
-        print("Results acquired.")
         for users in results:
             if users["users"]["email"] == email_address:
                 return True
@@ -44,7 +41,6 @@ class UserAccess:
 
     def search(self, email_address):
         results = self.records.find({})
-        time.sleep(2)
         for users in results:
             if users["users"]["email"] == email_address:
                 return users["_id"]
@@ -52,7 +48,6 @@ class UserAccess:
     def check_password(self, email, password):
         answer = None
         results = self.records.find({})
-        time.sleep(2)
         for users in results:
             if users["users"]["email"] == email and check_password_hash(pwhash=users["users"]["password"],
                                                                         password=password):
@@ -70,7 +65,6 @@ class UserAccess:
         answer = None
         message = None
         results = self.records.find({})
-        time.sleep(2)
         for users in results:
             if users["users"]["email"] == email_address:
                 password = generate_password_hash(password=new_password, method='pbkdf2:sha256', salt_length=6)
