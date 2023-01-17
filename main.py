@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, flash, redirect, session, make_response
+from flask import Flask, render_template, request, url_for, flash, redirect, session
 from datetime import datetime
 import os
 from registration_request_notice import NotificationManager
@@ -93,7 +93,6 @@ def login():
             elif password:
                 session["authorised"] = True
                 session["current_user"] = str(database.search(email))
-                print(session["current_user"])
                 return redirect(url_for('home'))
     return render_template("login.html", year=year)
 

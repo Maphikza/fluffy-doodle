@@ -75,5 +75,3 @@ class UserAccess:
                 answer = False
                 message = "Update Failed"
         return answer, message
-
-
